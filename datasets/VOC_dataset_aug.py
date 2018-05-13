@@ -1,18 +1,10 @@
 # -*- coding: utf-8 -*-
-# @Time    : 18-5-6 下午1:09
+# @Time    : 18-5-13 下午12:34
 # @Author  : Kim Luo
 # @Email   : kim_luo_balabala@163.com
-# @File    : VOC_dataset.py
+# @File    : VOC_dataset_aug.py
 # @Software: PyCharm
-'''
-实现voc数据集，要能够 载入这里面的样子：torch.utils.data.DataLoader
-其实也没啥，主要就是初始化，选择train val，实现getitem，len就好了
-这里主要是针对多标签分类，把clsgt里面的多标签弄出来，然后保存起来，下次直接读图片就好了
-标签就是一个列表（json可保存），eg，[13,15]代表图片中存在马和人两类
-
-关于保存imdb，我是想做成一个固定的文件下，也就是说，无论从哪里调用这个数据集，都从那里载入
-'''
-# 在VOC_dataset_aug里面加入10582的数据集
+'''针对多标签分类的任务，使用10582的增强训练集进行训练'''
 import torch.utils.data as data
 import os
 import sys
@@ -37,7 +29,7 @@ def extract_label_from_gt(label_path):
     return label_a.tolist()  #输出1表示该类别存在，-1表示不存在
 
 
-class VOC_dataset(data.Dataset):
+class VOC_dataset_aug(data.Dataset):
     '''train还是val必须是字符串'''
 
     def __init__(self, train='train', transform=None, label_transform=None):
@@ -54,18 +46,28 @@ class VOC_dataset(data.Dataset):
         imdb_save_dir = os.path.dirname(__file__)+'/imdb_save'
         if not os.path.exists(imdb_save_dir):
             os.mkdir(imdb_save_dir)
-        imdb_save_path = imdb_save_dir + '/imdb_voc_multilabel_cls_'+ train+'.json'
+        imdb_save_path = imdb_save_dir + '/imdb_voc_multilabel_cls_AUG_'+ train+'.json'
         if osp.exists(imdb_save_path):
             self.files = Ex.load_json(imdb_save_path)
-        else:
-            data_dir = '/home/kimy/data_sets/VOCdevkit/2012/VOC2012'
-            imgsets_dir = osp.join(data_dir, "ImageSets/Segmentation/%s.txt" % train)
-            with open(imgsets_dir) as imgset_file:
+        else:  #TODO 可以考虑把验证集也加进来训练，或者是对验证集生成伪标签加入训练
+            if train == 'train':
+                img_dir='/home/kimy/data_sets/sbd/img'
+                img_sets_txt='/home/kimy/data_sets/sbd/train_withoutval.txt'
+                cls_gt_dir='/home/kimy/data_sets/sbd/cls'
+            elif train == 'val':
+                img_dir='/home/kimy/data_sets/VOCdevkit/2012/VOC2012/JPEGImages'
+                img_sets_txt='/home/kimy/data_sets/VOCdevkit/2012/VOC2012/ImageSets/Segmentation/val.txt'
+                cls_gt_dir = '/home/kimy/data_sets/VOCdevkit/2012/VOC2012/SegmentationClass'
+            else:
+                print('wrong train opt {}  !!!--- just train or val'.format(train))
+                img_dir=''
+                img_sets_txt=''
+                cls_gt_dir=''
+            with open(img_sets_txt) as imgset_file:
                 for name in imgset_file:
                     name = name.strip()
-                    img_file = osp.join(data_dir, "JPEGImages/%s.jpg" % name)
-                    label_file = osp.join(data_dir, "SegmentationClass/%s.png" % name)
-
+                    img_file = img_dir+'/'+name+'.jpg'
+                    label_file = cls_gt_dir + '/' + name + '.png'
                     cls_label = extract_label_from_gt(label_file)
                     self.files.append({
                         "img": img_file,
@@ -100,5 +102,5 @@ class VOC_dataset(data.Dataset):
         return img
 
 if __name__ == '__main__':
-    data = VOC_dataset(train='train')
+    data = VOC_dataset_aug(train='val')
     print(0)

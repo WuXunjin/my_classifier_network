@@ -32,7 +32,7 @@ class vgg16_re(nn.Module):
         self.n_classes = 1000
 
         self.conv_block1 = nn.Sequential(
-            nn.Conv2d(3, 64, 3, padding=100),
+            nn.Conv2d(3, 64, 3, padding=1),
             nn.ReLU(inplace=True),
             nn.Conv2d(64, 64, 3, padding=1),
             nn.ReLU(inplace=True),
@@ -71,13 +71,19 @@ class vgg16_re(nn.Module):
             nn.Conv2d(512, 512, 3, padding=1),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(2, stride=2, ceil_mode=True),)
-    def forward(self, x):
-        conv1 = self.conv_block1(x)
-        conv2 = self.conv_block2(conv1)
-        conv3 = self.conv_block3(conv2)
-        conv4 = self.conv_block4(conv3)
-        conv5 = self.conv_block5(conv4)
-        return conv5
+    def forward(self, x):  #写成这样conv1 conv2 什么的，会占很多显存
+        # conv1 = self.conv_block1(x)
+        # conv2 = self.conv_block2(conv1)
+        # conv3 = self.conv_block3(conv2)
+        # conv4 = self.conv_block4(conv3)
+        # conv5 = self.conv_block5(conv4)
+
+        output = self.conv_block1(x)
+        output = self.conv_block2(output)
+        output = self.conv_block3(output)
+        output = self.conv_block4(output)
+        output = self.conv_block5(output)
+        return output
 
 
     def init_vgg16_params(self):
@@ -98,11 +104,11 @@ class vgg16_re(nn.Module):
                     assert l1.bias.size() == l2.bias.size()
                     l2.weight.data = l1.weight.data
                     l2.bias.data = l1.bias.data
-        for i1, i2 in zip([0, 3], [0, 3]):
-            l1 = vgg16_model.classifier[i1]
-            l2 = self.classifier[i2]
-            l2.weight.data = l1.weight.data.view(l2.weight.size())
-            l2.bias.data = l1.bias.data.view(l2.bias.size())
+        # for i1, i2 in zip([0, 3], [0, 3]):
+        #     l1 = vgg16_model.classifier[i1]
+        #     l2 = self.classifier[i2]
+        #     l2.weight.data = l1.weight.data.view(l2.weight.size())
+        #     l2.bias.data = l1.bias.data.view(l2.bias.size())
 
 
 if __name__ == '__main__':

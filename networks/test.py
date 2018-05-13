@@ -8,5 +8,12 @@
 @time: 18-4-17 下午5:19
 @desc:
 '''
+import os
+
+def print_cur_path():
+    print( os.path.curdir)
+    print(os.path.abspath(os.path.curdir))
+    print __file__
+    print os.path.dirname(__file__)
 if __name__ == '__main__':
     pass

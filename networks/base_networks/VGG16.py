@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
+import torch
 import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
-
+import math
 
 
 
 # current_file_path=os.path.dirname(inspect.stack()[0][1])
-pre_trained_model_dir='/home/kim/data_set/pretrained_models'
+pre_trained_model_dir='/home/kimy/data_sets/pretrained_models'
 
 
 __all__ = [
