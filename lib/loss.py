@@ -11,6 +11,23 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+class rec_conv5_criterion(nn.Module):
+    def __init__(self):
+        super(rec_conv5_criterion, self).__init__()
+        # 分类损失
+        self.cls_criterion = nn.MultiLabelSoftMarginLoss()
+        # 重构损失 先用欧式距离吧
+        self.rec_criterion=nn.MSELoss()
+
+    def forward(self, cls_scores,rec_result,rec_im,cls_label, size_average=True):
+        alpha=0.5
+        #分类损失
+        cls_loss=self.cls_criterion(cls_scores,cls_label)
+        #重构损失
+        # rec_loss=F.pairwise_distance(rec_result,rec_im)
+        rec_loss=self.rec_criterion(rec_result,rec_im)
+        return alpha*torch.mean(cls_loss)+(1-alpha)*torch.mean(rec_loss)
+
 class MultiLabelClsV1(nn.Module):
     """
     多标签分类损失，输入score是一维的向量，输入标签是1和-1的，1表示存在类别，-1表示不存在类别

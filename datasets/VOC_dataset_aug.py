@@ -14,7 +14,7 @@ from PIL import Image
 import lib.Experiment as Ex
 import numpy as np
 import torch
-
+import torchvision.transforms as transforms
 
 def extract_label_from_gt(label_path):
     label_mask = Image.open(label_path).convert("P")
@@ -100,6 +100,39 @@ class VOC_dataset_aug(data.Dataset):
         if self.img_transform is not None:
             img = self.img_transform(img)
         return img
+
+class VOC_dataset_aug_rec_conv5(VOC_dataset_aug):
+
+    def __init__(self, train='train', transform=None, label_transform=None):
+        super(VOC_dataset_aug_rec_conv5, self).__init__(train, transform, label_transform)
+        self.trans_img_rec=transforms.Compose([
+    transforms.ToTensor(), # range [0, 255] -> [0.0,1.0]
+    ])
+        self.trans_imgTensor_pil=transforms.ToPILImage()
+        self.re_size=(7,7)
+
+    def __getitem__(self, index):
+        datafiles = self.files[index]
+
+        img_file = datafiles["img"]
+        img = Image.open(img_file).convert('RGB')
+        re_img=img.resize(self.re_size)
+
+        label = np.asarray(datafiles["label"])  # 有可能需要转换成numpy的数组
+        label= torch.from_numpy(label)  # ai~ DoubleTensor but we need FloatTensor
+        label=label.float()
+        if self.img_transform is not None:
+            img = self.img_transform(img)
+            re_img=self.trans_imgTensor_pil(img)
+            re_img=re_img.resize(self.re_size)
+            re_img=self.trans_img_rec(re_img)
+        if self.label_transform is not None:
+            label = self.label_transform(label)
+
+        return img, re_img , label
+
+    def test_one_img(self, img_path='', if_cls_seg_gt=False):
+        return super(VOC_dataset_aug_rec_conv5, self).test_one_img(img_path, if_cls_seg_gt)
 
 if __name__ == '__main__':
     data = VOC_dataset_aug(train='val')
