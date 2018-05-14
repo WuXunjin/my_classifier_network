@@ -44,14 +44,14 @@ iCoseg数据集,包含38个类别的图片,每个类别的图片分别存放在�
 
 ### VOC数据集
 写了两个VOC_dataset是用来训练多标签分类的模型的
-VOC_data_seg是用来训练分割的模型的，都还没有加入10582的数据
+VOC_data_seg是用来训练分割的模型的，都还没有加入10582的数据(VOC_dataset_aug)
 
 ---
 ## 模型
 
 先弄一个VGG16模型吧,我这里暂时只有这个的预训练模型
 
-mobile net:[https://github.com/marvis/pytorch-mobilenet]
+[mobile net](https://github.com/marvis/pytorch-mobilenet)
 
 ### VGG16
 实现的功能是:载入预训练模型参数,模型的实现要方便增加跳层连接或者一些其他的结构变化
@@ -78,7 +78,7 @@ mobile net:[https://github.com/marvis/pytorch-mobilenet]
 
 不知道写这个代码的时候会不会有什么补充的东西,再说吧
 
-##5.13更新
+## 5.13更新
 在main_train_v1 里面实现了VGG模型训练pascal voc的多标签分类，损失函数用的是criterion = nn.MultiLabelSoftMarginLoss()
 但是测试了一下比如说图片中有两类15和5分别是人和瓶子，人的fc输出得分是9瓶子的是-0.4,其他都是-5以下，也就是说瓶子的得分还是很脆弱的。
 考虑换一个loss函数，也就是说模型对小目标的感知能力还是不足，在卷积池化过程中丢掉了很多东西。

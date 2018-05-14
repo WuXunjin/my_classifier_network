@@ -32,3 +32,29 @@ def pixel_accuracy(hist_matrix):
     p_a =  num/max(1,np.sum(hist_matrix).astype('float'))
     print('Pixel accuracy:',p_a)
     return p_a
+
+def segm_size(segm):
+    try:
+        height = segm.shape[0]
+        width  = segm.shape[1]
+    except IndexError:
+        raise
+
+    return height, width
+
+def check_size(eval_segm, gt_segm):
+    h_e, w_e = segm_size(eval_segm)
+    h_g, w_g = segm_size(gt_segm)
+
+    if (h_e != h_g) or (w_e != w_g):
+        raise EvalSegErr("DiffDim: Different dimensions of matrices!")
+
+'''
+Exceptions
+'''
+class EvalSegErr(Exception):
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return repr(self.value)
